@@ -47,6 +47,8 @@ const uint8_t SPINNERS[4][3] = {
   },
 };
 
+unsigned long lastCheckTime;
+
 const uint8_t NUM_SPINNERS = 4;
 
 const unsigned int NUM_SITES = 3;
@@ -130,7 +132,7 @@ void setup() {
    */
   lc.shutdown(0,false);
   /* Set the brightness to a medium values */
-  lc.setIntensity(0,2);
+  lc.setIntensity(0,1);
   /* and clear the display */
   lc.clearDisplay(0);
 
@@ -203,16 +205,23 @@ void setup() {
   // connect to example.com to make sure
   // everything is working
   checkSite(0);
-  
-  if (!lastCheckSuccess) {
-    while(1) {}
-  }
+  lastCheckTime = millis();
 }
 
+int currSite = 1;
+
 void loop() {
-  for (int i = 0; i < NUM_SITES; i++) {
-    checkSite(i);
+  if ((millis() - lastCheckTime) >= 5000) {
+    lc.setIntensity(0, 1);
+    checkSite(currSite);
+    currSite = (currSite + 1) % NUM_SITES;
+    lastCheckTime = millis();
     if (lastCheckSuccess) lc.clearDisplay(0);
-    delay(5000);
+  } else if (!lastCheckSuccess) {
+    if (((millis() - lastCheckTime) % 1000) < 500) {
+      lc.setIntensity(0, 8);
+    } else {
+      lc.setIntensity(0, 1);
+    }
   }
 }
