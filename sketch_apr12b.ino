@@ -222,7 +222,7 @@ void loop() {
     checkSite(currSite);
     lastCheckTime = millis();
     if (lastCheckSuccess) lc.clearDisplay(0);
-    if ((currSite == 2) && !lastCheckSuccess) {
+    if ((currSite == 0) && !lastCheckSuccess) {
       delay(15000);
       resetFunc();
     }
