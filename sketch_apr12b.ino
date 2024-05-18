@@ -57,7 +57,7 @@ const unsigned int NUM_SITES = 3;
 
 const char* sites[] = {"https://example.com", "https://kaon.cc", "https://mizu.kaon.cc"};
 
-const uint8_t sitePatterns[3][7] = {
+const uint8_t sitePatterns[4][7] = {
   {
     0b10101000,
     0b00101000,
@@ -69,12 +69,12 @@ const uint8_t sitePatterns[3][7] = {
   },
   {
     0b10000000,
-    0b10011000,
-    0b01000000,
-    0b00111000,
-    0b01000000,
     0b10100000,
-    0b10010000,
+    0b10100000,
+    0b11111000,
+    0b10100000,
+    0b10100000,
+    0b10000000,
   },
   {
     0b01010000,
@@ -84,6 +84,15 @@ const uint8_t sitePatterns[3][7] = {
     0b00100000,
     0b01000000,
     0b10100000,
+  },
+  {
+    0b10000000,
+    0b10011000,
+    0b01000000,
+    0b00111000,
+    0b01000000,
+    0b10100000,
+    0b10010000,
   },
 };
 
