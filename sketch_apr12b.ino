@@ -49,6 +49,79 @@ const uint8_t SPINNERS[4][3] = {
 
 const uint8_t NUM_SPINNERS = 4;
 
+const unsigned int NUM_SITES = 3;
+
+const char* sites[] = {"https://example.com", "https://kaon.cc", "https://mizu.serv.kaon.cc"};
+
+const uint8_t sitePatterns[3][7] = {
+  {
+    0b10101000,
+    0b00101000,
+    0b11001000,
+    0b00010000,
+    0b11100000,
+    0b00000000,
+    0b00000000,
+  },
+  {
+    0b10000000,
+    0b10011000,
+    0b01000000,
+    0b00111000,
+    0b01000000,
+    0b10100000,
+    0b10010000,
+  },
+  {
+    0b01010000,
+    0b00110000,
+    0b10000000,
+    0b11111000,
+    0b00100000,
+    0b01000000,
+    0b10100000,
+  },
+};
+
+bool lastCheckSuccess;
+
+void checkSite(int siteIndex) {
+  lc.setRow(0, 0, sitePatterns[siteIndex][0]);
+  lc.setRow(0, 1, sitePatterns[siteIndex][1]);
+  lc.setRow(0, 2, sitePatterns[siteIndex][2]);
+  lc.setRow(0, 3, 0b00000010 | sitePatterns[siteIndex][3]);
+  lc.setRow(0, 4, sitePatterns[siteIndex][4]);
+  lc.setRow(0, 5, 0b00000010 | sitePatterns[siteIndex][5]);
+  lc.setRow(0, 6, sitePatterns[siteIndex][6]);
+  lc.setRow(0, 7, 0b00000010);
+  
+  WiFiClientSecure wclient;
+  wclient.setInsecure(); // ignore SSL errors
+
+  HTTPClient hclient;
+  boolean success = false;
+  if (hclient.begin(wclient, sites[siteIndex])) {
+    int statusCode = hclient.GET();
+    if (statusCode == 200) success = true;
+  }
+
+  if (success) {
+    lc.setRow(0, 3, sitePatterns[siteIndex][3]);
+    lc.setRow(0, 4, 0b00000010 | sitePatterns[siteIndex][4]);
+    lc.setRow(0, 5, 0b00000100 | sitePatterns[siteIndex][5]);
+    lc.setRow(0, 6, 0b00000010 | sitePatterns[siteIndex][6]);
+    lc.setRow(0, 7, 0b00000001);
+  } else {
+    lc.setRow(0, 3, sitePatterns[siteIndex][3]);
+    lc.setRow(0, 5, 0b00000101 | sitePatterns[siteIndex][5]);
+    lc.setRow(0, 6, 0b00000010 | sitePatterns[siteIndex][6]);
+    lc.setRow(0, 7, 0b00000101);
+  }
+
+  lastCheckSuccess = success;
+  delay(1000);
+}
+
 void setup() {
 
   /*
@@ -57,7 +130,7 @@ void setup() {
    */
   lc.shutdown(0,false);
   /* Set the brightness to a medium values */
-  lc.setIntensity(0,8);
+  lc.setIntensity(0,2);
   /* and clear the display */
   lc.clearDisplay(0);
 
@@ -126,39 +199,20 @@ void setup() {
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
 
-  lc.setRow(0, 3, 0b00010010);
-  lc.setRow(0, 5, 0b00000010);
-  lc.setRow(0, 6, 0b00000000);
-  lc.setRow(0, 7, 0b00000010);
 
   // connect to example.com to make sure
   // everything is working
-  WiFiClientSecure wclient;
-  wclient.setInsecure(); // ignore SSL errors
-
-  HTTPClient hclient;
-  boolean success = false;
-  if (hclient.begin(wclient, "https://example.com")) {
-    int statusCode = hclient.GET();
-    if (statusCode == 200) success = true;
-  }
-  if (success) {
-    lc.setRow(0, 3, 0b00010000);
-    lc.setRow(0, 4, 0b11100010);
-    lc.setRow(0, 5, 0b00000100);
-    lc.setRow(0, 6, 0b00000010);
-    lc.setRow(0, 7, 0b00000001);
-  } else {
-    lc.setRow(0, 3, 0b00010000);
-    lc.setRow(0, 5, 0b00000101);
-    lc.setRow(0, 6, 0b00000010);
-    lc.setRow(0, 7, 0b00000101);
-  }
-  delay(1000);
-  if (success) lc.clearDisplay(0); else {
+  checkSite(0);
+  
+  if (!lastCheckSuccess) {
     while(1) {}
   }
 }
 
 void loop() {
+  for (int i = 0; i < NUM_SITES; i++) {
+    checkSite(i);
+    if (lastCheckSuccess) lc.clearDisplay(0);
+    delay(5000);
+  }
 }
