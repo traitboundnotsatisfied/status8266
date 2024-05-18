@@ -49,6 +49,8 @@ const uint8_t SPINNERS[4][3] = {
 
 unsigned long lastCheckTime;
 
+void(* resetFunc) (void) = 0;
+
 const uint8_t NUM_SPINNERS = 4;
 
 const unsigned int NUM_SITES = 3;
@@ -206,6 +208,10 @@ void setup() {
   // everything is working
   checkSite(0);
   lastCheckTime = millis();
+  if (lastCheckSuccess) lc.clearDisplay(0); else {
+    delay(15000);
+    resetFunc();
+  }
 }
 
 int currSite = 1;
@@ -214,9 +220,13 @@ void loop() {
   if ((millis() - lastCheckTime) >= 5000) {
     lc.setIntensity(0, 1);
     checkSite(currSite);
-    currSite = (currSite + 1) % NUM_SITES;
     lastCheckTime = millis();
     if (lastCheckSuccess) lc.clearDisplay(0);
+    if ((currSite == 2) && !lastCheckSuccess) {
+      delay(15000);
+      resetFunc();
+    }
+    currSite = (currSite + 1) % NUM_SITES;
   } else if (!lastCheckSuccess) {
     if (((millis() - lastCheckTime) % 1000) < 500) {
       lc.setIntensity(0, 8);
