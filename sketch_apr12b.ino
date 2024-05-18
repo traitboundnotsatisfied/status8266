@@ -55,7 +55,7 @@ const uint8_t NUM_SPINNERS = 4;
 
 const unsigned int NUM_SITES = 3;
 
-const char* sites[] = {"https://example.com", "https://kaon.cc", "https://mizu.serv.kaon.cc"};
+const char* sites[] = {"https://example.com", "https://kaon.cc", "https://mizu.kaon.cc"};
 
 const uint8_t sitePatterns[3][7] = {
   {
